@@ -1,0 +1,255 @@
+<div fxLayout="row wrap" style="width:100%; height: 100%">
+  <!-- remainder menu -->
+  <div align="center" *ngIf="timer_panel">
+    <mat-card class="menu">
+      <label>
+        <button
+          matTooltip="Go back"
+          mat-menu-item
+          (click)="timer_panel = false"
+        >
+          <mat-icon>
+            <img src="../../assets/img/fundoAssests/arrow.svg "
+          /></mat-icon></button
+        >Pick date & time</label
+      >
+      <button mat-menu-item>
+        <input
+          style="width: 126px; "
+          [(ngModel)]="model.date"
+          matInput
+          [matDatepicker]="picker"
+          placeholder="Choose a date "
+        />
+        <mat-datepicker-toggle
+          style="    margin-left: 67px;"
+          [for]="picker"
+        ></mat-datepicker-toggle>
+        <mat-datepicker #picker></mat-datepicker>
+      </button>
+      <button mat-menu-item>
+        <input
+          matInput
+          [ngxTimepicker]="picker1"
+          [(ngModel)]="model.time"
+          placeholder="Choose a time"
+        />
+        <ngx-material-timepicker #picker1></ngx-material-timepicker>
+      </button>
+      <button mat-menu-item (click)="otherSaveTimeDate(01)">Save</button>
+    </mat-card>
+  </div>
+  <div
+    fxLayout="row"
+    cdkDropList
+    fxLayoutGap="10px"
+    (cdkDropListDropped)="drop($event)"
+    fxLayoutAlign="center center"
+    style="margin-top: 133px;margin-right:8%;width: 100%;"
+  >
+    <!-- <mat-card class="othermat " *ngFor="let user of ( notes | searchdata : searchData )" cdkDrag [ngStyle]="{'background-color': user.color}"> -->
+    <div style="width: 900px;" fxLayout="row wrap" fxLayoutAlign="start start">
+      <div *ngFor="let user of notes">
+        <mat-card
+          class="othermat "
+          [ngClass]="direction == 'row' ? 'cardDisplay' : 'cardDisplayrow'"
+          *ngIf="user.isDeleted == 1"
+          cdkDrag
+          [ngStyle]="{ 'background-color': user.color }"
+        >
+          <input
+            style="display: none;"
+            type="file"
+            #file
+            (change)="onSelectFile($event, user.id)"
+          />
+          <div style="    margin-top: -17px;" *ngIf="!displayOtherCards">
+            <input
+              style=" width: 80%; "
+              (click)="openDialog(user)"
+              matInput
+              [(ngModel)]="user.title"
+            />
+            <button
+              style=" width: 40px ;padding-top: 5px; "
+              class="tools"
+              (click)="crud(user.id, '1', 'Archive')"
+              mat-icon-button
+            >
+              <mat-icon matSuffix
+                ><img
+                  class="hidded"
+                  src="../../assets/img/fundoAssests/pin.svg "
+              /></mat-icon>
+            </button>
+            <div *ngIf="user.image != 'data:image/jpeg;base64,'">
+              <img
+                src="{{ user.image }}"
+                (click)="openDialog(user)"
+                alt=""
+                class="noteImage"
+              />
+            </div>
+          </div>
+          <div *ngIf="!displayOtherCards" style="padding-bottom: 0; ">
+            <input
+              style=" width:95%; "
+              (click)="openDialog(user)"
+              matInput
+              [(ngModel)]="user.notes"
+            />
+          </div>
+          <div
+            align="left"
+            style="margin-top: 7px;"
+            *ngIf="
+              user.remainder != 'undefined' &&
+              user.remainder != 'null' &&
+              user.remainder != ''
+            "
+          >
+            <button (click)="othertimepanel(user.id)" mat-button>
+              <mat-icon
+                ><img
+                  class="timerclass"
+                  src="../../assets/img/fundoAssests/timer.svg "/></mat-icon
+              >{{ user.remainder }}
+            </button>
+            <button
+              style="margin-left: -33px;height: 0px;"
+              mat-button
+              (click)="crud(user.id, '', 'delete_Reminder')"
+            >
+              <mat-icon
+                ><img
+                  style=" margin: 2px; margin-right: -19px"
+                  src="../../assets/img/fundoAssests/close.svg "
+              /></mat-icon>
+            </button>
+          </div>
+          <div *ngFor="let lbl of labeldata">
+            <div *ngIf="lbl.noteid == user.id">
+              <div
+                align="left"
+                style="margin-top: 7px;"
+                *ngIf="
+                  lbl.labelname != 'undefined' &&
+                  lbl.labelname != null &&
+                  lbl.labelname != '' &&
+                  lbl.labelname != 'null'
+                "
+              >
+                <button
+                  routerLink="labelcomp"
+                  (click)="sendLabelName(lbl.labelname)"
+                  mat-button
+                >
+                  {{ lbl.labelname }}
+                </button>
+
+                <button
+                  style="height: 0px; margin-left: -40px; margin-bottom: 3px;"
+                  mat-button
+                  (click)="deleteLabel(lbl.id)"
+                >
+                  <mat-icon
+                    ><img
+                      style=" margin: 2px;"
+                      src="../../assets/img/fundoAssests/close.svg "
+                  /></mat-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+          <span *ngFor="let item of collabarators">
+            <button
+              matTooltip="{{ item.email }}"
+              mat-mini-fab
+              [ngStyle]="{ 'background-color': user.color, color: 'black' }"
+              style="color:'black'"
+              *ngIf="item.noteId == user.id"
+            >
+              {{ item.email[0] }}{{ item.email[1] }}
+            </button>
+          </span>
+          <div *ngIf="!displayOtherCards" align="left" class="tools">
+            <!-- <div align="left" class="tools"> -->
+
+            <button
+              matTooltip="More "
+              [matMenuTriggerFor]="moreMenu"
+              mat-icon-button
+            >
+              <mat-icon>
+                <img src="../../assets/img/fundoAssests/more.svg "
+              /></mat-icon>
+            </button>
+            <mat-menu [overlapTrigger]="false" #moreMenu="matMenu">
+              <button (click)="deletNote(user.id)" mat-menu-item>
+                Delete forever
+              </button>
+              <button (click)="restoreNote(user.id)" mat-menu-item>
+                Restore
+              </button>
+              <mat-menu [overlapTrigger]="false" #label="matMenu">
+                <button mat-menu-item>Labels:</button>
+                <div *ngFor="let label of labels">
+                  <button mat-menu-item (click)="setLabel(user.id, label.name)">
+                    {{ label.name }}
+                  </button>
+                </div>
+              </mat-menu>
+            </mat-menu>
+          </div>
+          <div
+            align="center"
+            *ngIf="other_timer_panel && remainder_id == user.id"
+          >
+            <mat-card class="othermenu">
+              <label>
+                <button
+                  matTooltip="Go back"
+                  (click)="other_timer_panel = false"
+                  mat-menu-item
+                >
+                  <mat-icon>
+                    <img src="../../assets/img/fundoAssests/arrow.svg "
+                  /></mat-icon></button
+                >Pick date & time</label
+              >
+              <button mat-menu-item>
+                <input
+                  style="width: 126px; "
+                  [(ngModel)]="model.date"
+                  matInput
+                  [matDatepicker]="otherpickerr"
+                  placeholder="Choose a date "
+                />
+                <mat-datepicker-toggle
+                  style="    margin-left: 67px;"
+                  [for]="otherpickerr"
+                ></mat-datepicker-toggle>
+                <mat-datepicker #otherpickerr></mat-datepicker>
+              </button>
+              <button mat-menu-item>
+                <input
+                  matInput
+                  [ngxTimepicker]="otherpickerr1"
+                  [(ngModel)]="model.time"
+                  placeholder="Choose a time"
+                />
+                <ngx-material-timepicker
+                  #otherpickerr1
+                ></ngx-material-timepicker>
+              </button>
+              <button mat-menu-item (click)="otherSaveTimeDate(user.id)">
+                Save
+              </button>
+            </mat-card>
+          </div>
+        </mat-card>
+      </div>
+    </div>
+  </div>
+  <div *ngIf="iserror">{{ errorMessage }}</div>
+</div>
